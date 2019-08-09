@@ -36,11 +36,11 @@ class Chart:
         sd = np.zeros(length, dtype='float32')
         average = 0.0
         avdevsum = 0.0
-        for i in range(0, period): #arvutab liugkeskmise
+        for i in range(0, period):
             average += self.bid[i]
             ma[i] = average / (i + 1)
             avdevsum += (self.bid[i] - ma[i]) ** 2
-        for i in range(period, length): #arvutab ühe standardhälbe väärtuse
+        for i in range(period, length): #arvutab liugkeskmise ja ühe standardhälbe väärtuse
             average += self.bid[i]
             average -= self.bid[i - period]
             ma[i] += average / period
@@ -50,6 +50,25 @@ class Chart:
         for i in range(0, period): #Paneb kõige esimesed standardhälbed selleks mis esimesena arvutati
             sd[i] = sd[period]
         return (ma, sd)
+
+    def calculate_RSI(self, period): #Arvutab relative strength indexi
+        length = self.length
+        rsi = np.zeros(length, dtype='float32')
+        sum_gain = 0.0
+        sum_loss = 0.0
+
+        for i in range(0, period):
+            if(self.deltabid[i] < 0):sum_loss-=self.deltabid[i]
+            else:sum_gain+=self.deltabid[i]
+
+        for i in range(period, length):
+            if (self.deltabid[i] < 0):sum_loss-=self.deltabid[i]
+            else:sum_gain += self.deltabid[i]
+            if (self.deltabid[i-period] < 0):sum_loss+=self.deltabid[i-period]
+            else:sum_gain -= self.deltabid[i-period]
+            rsi[i] = 100-100/(sum_gain/sum_loss+1)
+        for i in range(0, period):
+            rsi[i] = rsi[period]
 
     def normalize(x): #Normaliseerib mingi teatud jada
         def sigmoid(x):
