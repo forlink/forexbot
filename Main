@@ -1,1 +1,2 @@
-dataset = Dataset(dataset, null)
+from Dataset import Dataset
+dataset = Dataset()
