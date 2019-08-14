@@ -4,6 +4,16 @@ import math
 from datetime import datetime
 
 class Chart:
+    def generate_direction(self, pricepoints): #Genereerib graafiku mis näitab kas antud hetkel peaks võtma buy või selli. pricepoints ütleb kui palju peab hind liikuma
+        pricepoints = pricepoints/100000
+        self.direction = np.zeros(self.length, dtype='float32')
+        for i in range(self.length-1):
+            j = i+1
+            price = self.bid[i]
+            while(abs(self.bid[j]-price)<pricepoints and j<self.length-1):j+=1  #Liigub edasi kuni in jõudnud kohani kus j hind erineb i hinnast pricepoints võrra
+            if(self.bid[j]>price):self.direction[i] = 1
+        print("Created direction chart")
+
     def __init__(self, path):
         self.path = path
         headers = ['time', 'bid', 'ask', 'bidvolume', 'askvolume']
@@ -29,6 +39,7 @@ class Chart:
             diff = datetime.strptime(df.at[i, 'time'], timeFormat) - datetime.strptime(df.at[i - 1, 'time'], timeFormat)
             self.deltat[i] = diff.microseconds / 1000 + diff.seconds * 1000
             self.deltabid[i] = (self.bid[i] - self.bid[i - 1]) * 100000 #Arvutab hinna muutuse (tuletise) pippides
+        self.generate_direction(1)
 
     def calculate_moving_average(self, period):
         length = self.length
@@ -54,8 +65,8 @@ class Chart:
     def calculate_RSI(self, period): #Arvutab relative strength indexi
         length = self.length
         rsi = np.zeros(length, dtype='float32')
-        sum_gain = 0.0
-        sum_loss = 0.0
+        sum_gain = 0
+        sum_loss = 0
 
         for i in range(0, period):
             if(self.deltabid[i] < 0):sum_loss-=self.deltabid[i]
@@ -69,6 +80,8 @@ class Chart:
             rsi[i] = 100-100/(sum_gain/sum_loss+1)
         for i in range(0, period):
             rsi[i] = rsi[period]
+        return rsi
+
 
     def normalize(x): #Normaliseerib mingi teatud jada
         def sigmoid(x):
