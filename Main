@@ -1,7 +1,7 @@
 from Dataset import Dataset
 from Chart import Chart
 from Model import Model
-eurusd_tick = Chart("EURUSD_short")
-train_dataset = Dataset(eurusd_tick, 0, 6000, 5000)
-test_dataset = Dataset(eurusd_tick, 6100, 7000, 1000)
+eurusd_july = Chart("EURUSD1.csv")
+train_dataset = Dataset(eurusd_july, 500, 60000, 50000)
+test_dataset = Dataset(eurusd_july, 60500, 65000, 5000)
 model = Model(train_dataset, test_dataset)

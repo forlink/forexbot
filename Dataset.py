@@ -14,6 +14,35 @@ class Dataset:
             elif ypos>12: ypos = 12
             img[i, ypos] = 1
         return img
+    def visualizer1(self, chart, pos):
+        if pos < 500 or pos >= chart.length:pos+=500
+        size = 20
+        dev5 = chart.dev5[(pos-size+1):(pos+1)]
+        dev25 = np.empty(size)
+        a = 0
+        for i in range((pos-size*5+1), (pos+1), 5):
+            dev25[a] = chart.dev25[i]
+            a+=1
+        dev125 = np.empty(size)
+        a = 0
+        for i in range((pos-size*25+1), (pos+1), 25):
+            dev125[a] = chart.dev125[i]
+            a += 1
+
+        data = np.concatenate([dev5, dev25, dev125])
+        return data
+
+    def visualizer(self, chart, pos):
+        size = 60
+        delta = chart.delta[(pos-size+1):(pos+1)]*10000
+        rsi = chart.rsi[(pos-size+1):(pos+1)]/50
+        dev5 = chart.dev5[(pos - size + 1):(pos + 1)]
+
+        arr = np.vstack([delta, rsi, dev5])
+
+        arr = arr.reshape((size, 3))
+
+        return arr
     def __init__(self, chart, start, stop, amount):
         self.slice_length = 100
         if(start<self.slice_length):start = self.slice_length
@@ -40,12 +69,13 @@ class Dataset:
         np.random.shuffle(trades)
         print("Created indexes")
 
-        self.x = np.empty((amount, self.slice_length, 13), dtype='float32')
+        self.x = np.empty((amount, 60, 3), dtype='float32')
         self.y = np.empty((amount, 1), dtype='float32')
+
 
         for i in range(amount):
             pos = trades[i]
-            arr = chart.deltabid[(pos-self.slice_length+1):(pos+1)]
-            self.x[i] = self.image(arr, self.slice_length)
+            # arr = chart.deltabid[(pos-self.slice_length+1):(pos+1)]
+            self.x[i] = self.visualizer(chart, pos)
             self.y[i, 0] = chart.direction[pos]
 
